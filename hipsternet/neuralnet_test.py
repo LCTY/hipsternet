@@ -3,7 +3,6 @@ import hipsternet.loss as loss_fun
 import hipsternet.layer as l
 import hipsternet.regularization as reg
 import hipsternet.utils as util
-from fixedInt import arrayFixedInt
 
 
 class NeuralNet(object):
@@ -298,21 +297,13 @@ class ConvNet(NeuralNet):
 
     def _init_model(self, D, C, H):
         self.model = dict(
-            W1=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_conv1.npy")),
-            W2=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc1.npy")),
-            W3=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc2.npy")),
-            b1=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy")),
-            b2=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy")),
-            b3=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy"))
+            W1=np.load("D:/Python/Python36/MNIST_CNN/weight/W_conv1.npy"),
+            W2=np.load("D:/Python/Python36/MNIST_CNN/weight/W_fc1.npy"),
+            W3=np.load("D:/Python/Python36/MNIST_CNN/weight/W_fc2.npy"),
+            b1=np.load("D:/Python/Python36/MNIST_CNN/weight/b_conv1.npy"),
+            b2=np.load("D:/Python/Python36/MNIST_CNN/weight/b_fc1.npy"),
+            b3=np.load("D:/Python/Python36/MNIST_CNN/weight/b_fc2.npy")
         )
-        # self.model = dict(
-        #     W1=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_conv1.npy"),
-        #     W2=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc1.npy"),
-        #     W3=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc2.npy"),
-        #     b1=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy"),
-        #     b2=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy"),
-        #     b3=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy")
-        # )
 
 
 class RNN:

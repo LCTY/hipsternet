@@ -3,7 +3,7 @@ import hipsternet.input_data as input_data
 import hipsternet.neuralnet as nn
 from hipsternet.solver import *
 import sys
-from fixedInt import arrayFixedInt
+import fixedInt
 
 
 n_iter = 1
@@ -36,8 +36,7 @@ if __name__ == '__main__':
     mnist = input_data.read_data_sets('data/MNIST_data/', one_hot=False)
     X_train, y_train = mnist.train.images, mnist.train.labels
     X_val, y_val = mnist.validation.images, mnist.validation.labels
-    # X_test, y_test = mnist.test.images[0:19], mnist.test.labels[0:19]
-    X_test, y_test = arrayFixedInt(8, 8, mnist.test.images[0:3]), arrayFixedInt(8, 8, mnist.test.labels[0:3])
+    X_test, y_test = mnist.test.images[0:256], mnist.test.labels[0:256]
 
     M, D, C = X_train.shape[0], X_train.shape[1], y_train.max() + 1
 

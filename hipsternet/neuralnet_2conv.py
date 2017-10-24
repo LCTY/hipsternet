@@ -3,7 +3,6 @@ import hipsternet.loss as loss_fun
 import hipsternet.layer as l
 import hipsternet.regularization as reg
 import hipsternet.utils as util
-from fixedInt import arrayFixedInt
 
 
 class NeuralNet(object):
@@ -199,59 +198,30 @@ class ConvNet(NeuralNet):
 
     def forward(self, X, train=False):
         # Conv-1
-        h1, h1_cache = l.conv_forward(X, self.model['W1'], self.model['b1'])
-        h1, nl_cache1 = l.relu_forward(h1)
-        # print(h1.shape)
+        h_conv1, h_conv1_cache = l.conv_forward(X, self.model['W_conv1'], self.model['b_conv1'])
+        h_conv1, nl_cache1 = l.relu_forward(h_conv1)
 
         # Pool-1
-        hpool, hpool_cache = l.maxpool_forward(h1)
-        # print(hpool.shape)
-        # print(hpool[0])
-        # np.savetxt('hpool.txt', hpool[0])
-        # input()
+        h_pool1, h_pool1_cache = l.maxpool_forward(h_conv1)
 
-        hpool = np.transpose(hpool, [0, 2, 3, 1])
-        h2 = hpool.ravel().reshape(X.shape[0], -1)  # 先攤平後分成64組
-        # print(h2.shape)
-        # print(h2[0])
-        # np.savetxt('h2.txt', h2[0])
-        # input()
+        # Conv-2
+        h_conv2, h_conv2_cache = l.conv_forward(h_pool1, self.model['W_conv2'], self.model['b_conv2'])
+        h_conv2, n2_cache2 = l.relu_forward(h_conv2)
 
-        # print(hpool.shape)
-        # print(hpool[0,0,:,:])
-        # print(h1.shape)
-        # print(hpool.shape)
-        # print(h2.shape)
-        # print(len(self.model['W1']))
-        # print(len(h1), len(h1_cache))
-        # print(len(h1), len(nl_cache1))
-        # print(len(hpool), len(hpool_cache))
-        # "X.shape[0] = 64"
+        # Pool-2
+        h_pool2, h_pool2_cache = l.maxpool_forward(h_conv2)
+
+        h_pool2 = np.transpose(h_pool2, [0, 2, 3, 1])
+        h_pool2_flat = h_pool2.ravel().reshape(X.shape[0], -1)  # 先攤平後分成 batch_size 組
 
         # FC-7
-        h3, h3_cache = l.fc_forward(h2, self.model['W2'], self.model['b2'])
-        h3, nl_cache3 = l.relu_forward(h3)
-        # print(h3.shape)
-        # print(h3[0])
-        # input()
+        h_fc1, h_fc1_cache = l.fc_forward(h_pool2_flat, self.model['W_fc1'], self.model['b_fc1'])
+        h_fc1, n3_cache3 = l.relu_forward(h_fc1)
 
         # Softmax
-        score, score_cache = l.fc_forward(h3, self.model['W3'], self.model['b3'])
+        score, score_cache = l.fc_forward(h_fc1, self.model['W_fc2'], self.model['b_fc2'])
 
-        # print('h1' + str(h1.shape))
-        # print('W1' + str(self.model['W1'].shape))
-        # print('b1' + str(self.model['b1'].shape))
-        # print('hpool' + str(hpool.shape))
-        # print('h2' + str(h2.shape))
-        # print('W2' + str(self.model['W2'].shape))
-        # print('b2' + str(self.model['b2'].shape))
-        # print('h3' + str(h3.shape))
-        # print('W2' + str(self.model['W3'].shape))
-        # print('b3' + str(self.model['b3'].shape))
-        # print('score' + str(score.shape))
-        # input()
-
-        return score, (X, h1_cache, h3_cache, score_cache, hpool_cache, hpool, nl_cache1, nl_cache3)
+        return score, (X, h_conv1_cache, nl_cache1, h_pool1_cache, h_conv2_cache, n2_cache2, h_pool2_cache, h_fc1_cache, n3_cache3, score_cache)
 
     def backward(self, y_pred, y_train, cache):
         X, h1_cache, h3_cache, score_cache, hpool_cache, hpool, nl_cache1, nl_cache3 = cache
@@ -279,40 +249,45 @@ class ConvNet(NeuralNet):
 
         return grad
 
-    # def _init_model(self, D, C, H):
-    #     self.model = dict(
-    #         W1=np.random.randn(D, 1, 3, 3) / np.sqrt(D / 2.),
-    #         W2=np.random.randn(D * 14 * 14, H) / np.sqrt(D * 14 * 14 / 2.),
-    #         W3=np.random.randn(H, C) / np.sqrt(H / 2.),
-    #         b1=np.zeros((D, 1)),
-    #         b2=np.zeros((1, H)),
-    #         b3=np.zeros((1, C))
-    #     )
-    #     print(np.shape(self.model['W1']))
-    #     print(np.shape(self.model['W2']))
-    #     print(np.shape(self.model['W3']))
-    #     print(np.shape(self.model['b1']))
-    #     print(np.shape(self.model['b2']))
-    #     print(np.shape(self.model['b3']))
-
 
     def _init_model(self, D, C, H):
-        self.model = dict(
-            W1=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_conv1.npy")),
-            W2=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc1.npy")),
-            W3=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc2.npy")),
-            b1=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy")),
-            b2=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy")),
-            b3=arrayFixedInt(8,8,np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy"))
-        )
+        # # default
         # self.model = dict(
-        #     W1=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_conv1.npy"),
-        #     W2=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc1.npy"),
-        #     W3=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/W_fc2.npy"),
-        #     b1=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy"),
-        #     b2=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy"),
-        #     b3=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy")
+        #     W1=np.random.randn(D, 1, 3, 3) / np.sqrt(D / 2.),
+        #     W2=np.random.randn(D * 14 * 14, H) / np.sqrt(D * 14 * 14 / 2.),
+        #     W3=np.random.randn(H, C) / np.sqrt(H / 2.),
+        #     b1=np.zeros((D, 1)),
+        #     b2=np.zeros((1, H)),
+        #     b3=np.zeros((1, C))
         # )
+        # # print(np.shape(self.model['W1']))
+        # # print(np.shape(self.model['W2']))
+        # # print(np.shape(self.model['W3']))
+        # # print(np.shape(self.model['b1']))
+        # # print(np.shape(self.model['b2']))
+        # # print(np.shape(self.model['b3']))
+
+        # # for hipsternet
+        # self.model = dict(
+        #     W1=np.load("D:/Python/Python36/MNIST_CNN/weight/W_conv1.npy"),
+        #     W2=np.load("D:/Python/Python36/MNIST_CNN/weight/W_fc1.npy"),
+        #     W3=np.load("D:/Python/Python36/MNIST_CNN/weight/W_fc2.npy"),
+        #     b1=np.load("D:/Python/Python36/MNIST_CNN/weight/b_conv1.npy"),
+        #     b2=np.load("D:/Python/Python36/MNIST_CNN/weight/b_fc1.npy"),
+        #     b3=np.load("D:/Python/Python36/MNIST_CNN/weight/b_fc2.npy")
+        # )
+
+        # for 2conv
+        self.model = dict(
+            W_conv1=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/W_conv1.npy"),
+            b_conv1=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/b_conv1.npy"),
+            W_conv2=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/W_conv2.npy"),
+            b_conv2=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/b_conv2.npy"),
+            W_fc1=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/W_fc1.npy"),
+            b_fc1=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/b_fc1.npy"),
+            W_fc2=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/W_fc2.npy"),
+            b_fc2=np.load("D:/Python/Python36/MNIST_CNN/weight/2conv/b_fc2.npy")
+        )
 
 
 class RNN:
