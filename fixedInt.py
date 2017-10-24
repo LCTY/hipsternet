@@ -232,7 +232,7 @@ class DeFixedInt(object):
 
         if isinstance(other, DeFixedInt):
 
-            # print "__mult__: other is DeFixedInt"
+            # print("__mult__: other is DeFixedInt")
             retValue.__intWidth = self.__intWidth + other.__intWidth + 1
             retValue.__fractWidth = self.__fractWidth + other.__fractWidth
             retValue.__roundMode = self.__roundMode
@@ -241,7 +241,7 @@ class DeFixedInt(object):
 
         elif isinstance(other, (int, float)):
 
-            # print "__mult__: other is '%s' "% type(other)
+            # print("__mult__: other is '%s' " % type(other))
             b = DeFixedInt(self.__intWidth, self.__fractWidth, other, self.__roundMode)
             retValue = self * b
 
@@ -314,8 +314,9 @@ class DeFixedInt(object):
 
         # check for the other value, only support 'int' type
         if not isinstance(other, int):
-            msg = "unsupported operand type(s) for <<: 'DeFixedInt' and '%s'" % type(other)
-            raise TypeError(msg)
+            # msg = "unsupported operand type(s) for <<: 'DeFixedInt' and '%s'" % type(other)
+            # raise TypeError(msg)
+            raise TypeError
 
         if other < 0:
             raise ValueError("negative shift count")
@@ -334,8 +335,9 @@ class DeFixedInt(object):
 
     def __rshift__(self, other):
         if not isinstance(other, int):
-            msg = "unsupported operand type(s) for <<: 'DeFixedInt' and '%s'" % type(other)
-            raise TypeError(msg)
+            # msg = "unsupported operand type(s) for <<: 'DeFixedInt' and '%s'" % type(other)
+            # raise TypeError(msg)
+            raise TypeError
 
         if other < 0:
             raise ValueError("negative shift count")
@@ -375,7 +377,11 @@ class DeFixedInt(object):
         return retValue
 
     def __lt__(self, other):
-        temp = copy.copy(other)
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
         temp.newRep(self.intWidth, self.fractWidth)
         if temp.value > self.value:
             return True
@@ -383,13 +389,22 @@ class DeFixedInt(object):
             return False
 
     def __le__(self, other):
-        if self < other or self == other:
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
+        if self < temp or self == temp:
             return True
         else:
             return False
 
     def __eq__(self, other):
-        temp = copy.copy(other)
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
         temp.newRep(self.intWidth, self.fractWidth)
         if temp.value == self.value:
             return True
@@ -397,7 +412,11 @@ class DeFixedInt(object):
             return False
 
     def __ne__(self, other):
-        temp = copy.copy(other)
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
         temp.newRep(self.intWidth, self.fractWidth)
         if temp.value != self.value:
             return True
@@ -405,7 +424,11 @@ class DeFixedInt(object):
             return False
 
     def __gt__(self, other):
-        temp = copy.copy(other)
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
         temp.newRep(self.intWidth, self.fractWidth)
         if temp.value < self.value:
             return True
@@ -413,7 +436,12 @@ class DeFixedInt(object):
             return False
 
     def __ge__(self, other):
-        if self > other or self == other:
+        if isinstance(other, int):
+            temp = DeFixedInt(self.intWidth, self.fractWidth, other)
+        else:
+            temp = copy.copy(other)
+
+        if self > temp or self == temp:
             return True
         else:
             return False
