@@ -201,20 +201,24 @@ class ConvNet(NeuralNet):
         # Conv-1
         h1, h1_cache = l.conv_forward(X, self.model['W1'], self.model['b1'])
         h1, nl_cache1 = l.relu_forward(h1)
+        print("h1 finish")
 
         # Pool-1
         hpool, hpool_cache = l.maxpool_forward(h1)
+        print("hpool finish")
 
         hpool = np.transpose(hpool, [0, 2, 3, 1])
         h2 = hpool.ravel().reshape(X.shape[0], -1)  # 先攤平後分成64組
-
+        print("h2 finish")
 
         # FC-7
         h3, h3_cache = l.fc_forward(h2, self.model['W2'], self.model['b2'])
         h3, nl_cache3 = l.relu_forward(h3)
+        print("h3 finish")
 
         # Softmax
         score, score_cache = l.fc_forward(h3, self.model['W3'], self.model['b3'])
+        print("score finish")
 
         return arrayToFloat(score), (X, h1_cache, h3_cache, score_cache, hpool_cache, hpool, nl_cache1, nl_cache3)
 
@@ -263,12 +267,12 @@ class ConvNet(NeuralNet):
 
     def _init_model(self, D, C, H):
         self.model = dict(
-            W1=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_conv1.npy")),
-            W2=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_fc1.npy")),
-            W3=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_fc2.npy")),
-            b1=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy")),
-            b2=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy")),
-            b3=arrayFixedInt(8, 8, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy"))
+            W1=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_conv1.npy")),
+            W2=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_fc1.npy")),
+            W3=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_fc2.npy")),
+            b1=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_conv1.npy")),
+            b2=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc1.npy")),
+            b3=arrayFixedInt(8, 16, np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/b_fc2.npy"))
         )
         # self.model = dict(
         #     W1=np.load("D:/Python/Python36/MNIST_CNN/data/model_2/weight/hipsternet/w_conv1.npy"),

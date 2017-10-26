@@ -3,7 +3,7 @@ import hipsternet.utils as util
 import hipsternet.constant as c
 import hipsternet.regularization as reg
 from hipsternet.im2col import *
-from fixedInt import DeFixedInt
+from fixedInt import *
 
 
 def fc_forward(X, W, b):

@@ -29,6 +29,17 @@ import copy
 import numpy
 
 
+def arrayTruncation(intWidth, fractWidth, x):
+    shape = x.shape
+    x = x.flatten().tolist()
+    for idx, val in enumerate(x):
+        val.newRep_sat(intWidth, fractWidth)
+        # x[idx] = DeFixedInt(intWidth, fractWidth, val)
+
+    x = numpy.array(x)
+    return x.reshape(shape)
+
+
 def arrayFixedInt(intWidth, fractWidth, x):
     shape = x.shape
     x = x.flatten().tolist()
@@ -75,7 +86,7 @@ class DeFixedIntOverflowError(OverflowError):
 class DeFixedInt(object):
     __slots__ = ('__intWidth', '__fractWidth', '__roundMode', '__value')
 
-    def __init__(self, intWidth=0, fractWidth=15, value=0, roundMode='round_even'):
+    def __init__(self, intWidth=0, fractWidth=15, value=0, roundMode='trunc'):
         # Test for proper parameter
         # Setting the value will be tested through the property function
         if intWidth < 0:
@@ -83,9 +94,7 @@ class DeFixedInt(object):
         if fractWidth < 0:
             raise ValueError("Fractional width needs to be >= 0!")
 
-        if ((roundMode != 'trunc') and
-                (roundMode != 'round_even') and
-                (roundMode != 'round')):
+        if ((roundMode != 'trunc') and (roundMode != 'round_even') and (roundMode != 'round')):
             raise ValueError("Round mode '%s' not supported!" % roundMode)
 
         self.__intWidth = intWidth
@@ -259,6 +268,8 @@ class DeFixedInt(object):
             msg = "'%s' not supported as operator for DeFixedInt multiplication" % type(other)
             raise TypeError(msg)
 
+        retValue.newRep_sat(8, 16)
+
         return retValue
 
     # def __div__(self, other):
@@ -307,6 +318,8 @@ class DeFixedInt(object):
         # print "after change: self: %s \n--> other: %s"% (self, other)
         # print "after change: self: %s \n--> temp: %s"% (self, temp)
         retValue.value = self.value + temp.value
+
+        retValue.newRep_sat(8, 16)
 
         return retValue
 
@@ -478,6 +491,32 @@ class DeFixedInt(object):
     ######################################################################
     # public methods (interface)
     ######################################################################
+
+    def newRep_sat(self, intWidth, fractWidth):
+        # first adjust the fractional width
+        if fractWidth > self.fractWidth:
+            n = fractWidth - self.fractWidth
+            # need to grow first to avoid overflow
+            self.__fractWidth = fractWidth
+            self.value = self.value << n
+        elif fractWidth < self.fractWidth:
+            # here we might loose precision
+            n = self.fractWidth - fractWidth
+            self.value = self.value >> n
+            self.__fractWidth = fractWidth
+
+        # next adjust the integer width
+        if intWidth > self.intWidth:
+            self.__intWidth = intWidth
+        elif intWidth < self.intWidth:
+            maxNum = 2 ** (intWidth + fractWidth) - 1
+            minNum = - 2 ** (intWidth + fractWidth)
+            if self.value > maxNum:
+                self.value = maxNum
+            elif self.value < minNum:
+                self.value = minNum
+
+            self.__intWidth = intWidth
 
     def isOverflowing(self, intWidth, fractWidth):
         maxNum = 2 ** (intWidth + fractWidth) - 1
