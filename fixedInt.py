@@ -39,6 +39,16 @@ def arrayFixedInt(intWidth, fractWidth, x):
     return x.reshape(shape)
 
 
+def arrayToFloat(x):
+    shape = x.shape
+    x = x.flatten().tolist()
+    for idx, val in enumerate(x):
+        x[idx] = val.fValue
+
+    x = numpy.array(x)
+    return x.reshape(shape)
+
+
 # def arrayFixedInt(intWidth, fractWidth, N, value=None):
 #     if isinstance(N, int):
 #

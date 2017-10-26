@@ -3,10 +3,11 @@ import hipsternet.utils as util
 import hipsternet.constant as c
 import hipsternet.regularization as reg
 from hipsternet.im2col import *
+from fixedInt import DeFixedInt
 
 
 def fc_forward(X, W, b):
-    out = X @ W + b
+    out = np.dot(X, W) + b
     cache = (W, X)
     return out, cache
 
@@ -22,8 +23,7 @@ def fc_backward(dout, cache):
 
 
 def relu_forward(X):
-    print(X.shape)
-    out = np.maximum(X, 0)
+    out = np.maximum(X, DeFixedInt(1, 1, 0.0))
     cache = X
     return out, cache
 
