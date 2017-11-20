@@ -3,11 +3,13 @@ import hipsternet.utils as util
 import hipsternet.constant as c
 import hipsternet.regularization as reg
 from hipsternet.im2col import *
-from fixedInt import *
+from ops.mul import mul
 
 
 def fc_forward(X, W, b):
-    out = np.dot(X, W) + b
+    X, W = X.astype(np.float64), W.astype(np.float64)
+    out = mul(X, W) + b
+    # out = np.dot(X, W) + b
     cache = (W, X)
     return out, cache
 
@@ -23,7 +25,7 @@ def fc_backward(dout, cache):
 
 
 def relu_forward(X):
-    out = np.maximum(X, DeFixedInt(1, 1, 0.0))
+    out = np.maximum(X, 0)
     cache = X
     return out, cache
 
@@ -137,7 +139,11 @@ def conv_forward(X, W, b, stride=1, padding=1):
     W_col = W.reshape(n_filters, -1)
 
     # out = W_col @ X_col + b
-    out = np.dot(W_col, X_col) + b
+    # out = np.dot(W_col, X_col) + b
+    X_col, W_col = X_col.astype(np.float64), W_col.astype(np.float64)
+    print('muling')
+    out = mul(W_col, X_col) + b
+    print('mul done')
     out = out.reshape(n_filters, h_out, w_out, n_x)
     out = out.transpose(3, 0, 1, 2)
 
