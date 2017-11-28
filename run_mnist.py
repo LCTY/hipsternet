@@ -3,7 +3,6 @@ from tensorflow.examples.tutorials.mnist import input_data
 import hipsternet.neuralnet as nn
 from hipsternet.solver import *
 import sys
-from fixedInt import arrayFixedInt
 
 
 
@@ -35,21 +34,18 @@ if __name__ == '__main__':
         net_type = 'cnn'
 
     mnist = input_data.read_data_sets('data/MNIST_data/', one_hot=False)
-    X_train, y_train = mnist.train.images, mnist.train.labels
-    X_val, y_val = mnist.validation.images, mnist.validation.labels
+    # X_train, y_train = mnist.train.images, mnist.train.labels
+    # X_val, y_val = mnist.validation.images, mnist.validation.labels
     X_test, y_test = mnist.test.images, mnist.test.labels
-    X_test = X_test.astype(np.float64)
-    y_test = y_test.astype(np.float64)
-    # X_test, y_test = arrayFixedInt(trn, 16, mnist.test.images[0:128]), arrayFixedInt(trn, 16, mnist.test.labels[0:128])
+    # X_test = X_test.astype(np.float64)
+    # y_test = y_test.astype(np.float64)
 
-    M, D, C = X_train.shape[0], X_train.shape[1], y_train.max() + 1
-
-    # X_train, X_val, X_test = prepro(X_train, X_val, X_test)
+    M, D, C = X_test.shape[0], X_test.shape[1], y_test.max() + 1
 
     if net_type == 'cnn':
         img_shape = (1, 28, 28)
-        X_train = X_train.reshape(-1, *img_shape)
-        X_val = X_val.reshape(-1, *img_shape)
+        # X_train = X_train.reshape(-1, *img_shape)
+        # X_val = X_val.reshape(-1, *img_shape)
         X_test = X_test.reshape(-1, *img_shape)
 
     solvers = dict(
@@ -85,4 +81,4 @@ if __name__ == '__main__':
         y_pred = net.predict(X_test)
         accs[k] = np.mean(y_pred == y_test)
 
-    print('Mean accuracy: {:.4f}, std: {:.4f}'.format(accs.mean(), accs.std()))
+    print('Mean accuracy: {:.8f}, std: {:.4f}'.format(accs.mean(), accs.std()))

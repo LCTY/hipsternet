@@ -7,9 +7,26 @@ from ops.mul import mul
 
 
 def fc_forward(X, W, b):
+    out = np.dot(X, W) + b
+
+    # X, W = X.astype(np.float64), W.astype(np.float64)
+    # out = mul(X, W) + b
+    cache = (W, X)
+    return out, cache
+
+
+def fc_forward_trn(X, W, b, add_bit, mul_bit):
     X, W = X.astype(np.float64), W.astype(np.float64)
-    out = mul(X, W) + b
-    # out = np.dot(X, W) + b
+    print('muling')
+    out, max, min = mul(X, W, add_bit, mul_bit)
+    print("max = {} \t min = {}".format(max, min))
+    out = out + b
+    # out = mul(X, W, add_bit, mul_bit) + b
+    out = np.floor(out * (2 ** add_bit)) / (2 ** add_bit)
+    print('mul done')
+
+    # X, W = X.astype(np.float64), W.astype(np.float64)
+    # out = mul(X, W) + b
     cache = (W, X)
     return out, cache
 
@@ -138,12 +155,75 @@ def conv_forward(X, W, b, stride=1, padding=1):
     X_col = im2col_indices(X, h_filter, w_filter, padding=padding, stride=stride)
     W_col = W.reshape(n_filters, -1)
 
-    # out = W_col @ X_col + b
-    # out = np.dot(W_col, X_col) + b
+    out = np.dot(W_col, X_col) + b
+
+    # X_col, W_col = X_col.astype(np.float64), W_col.astype(np.float64)
+    # print('muling')
+    # out = mul(W_col, X_col) + b
+    # print('mul done')
+
+    out = out.reshape(n_filters, h_out, w_out, n_x)
+    out = out.transpose(3, 0, 1, 2)
+
+    cache = (X, W, b, stride, padding, X_col)
+
+    return out, cache
+
+
+def conv_forward_wtrn(X, W, b, wt, bt, stride=1, padding=1):
+    W, b = np.floor(W * (2**wt)) / (2**wt), np.floor(b * (2**bt)) / (2**bt)
+    cache = W, b, stride, padding
+    n_filters, d_filter, h_filter, w_filter = W.shape
+    n_x, d_x, h_x, w_x = X.shape
+    h_out = (h_x - h_filter + 2 * padding) / stride + 1
+    w_out = (w_x - w_filter + 2 * padding) / stride + 1
+
+    if not h_out.is_integer() or not w_out.is_integer():
+        raise Exception('Invalid output dimension!')
+
+    h_out, w_out = int(h_out), int(w_out)
+
+    X_col = im2col_indices(X, h_filter, w_filter, padding=padding, stride=stride)
+    W_col = W.reshape(n_filters, -1)
+
+    out = np.dot(W_col, X_col) + b
+
+    # X_col, W_col = X_col.astype(np.float64), W_col.astype(np.float64)
+    # print('muling')
+    # out = mul(W_col, X_col) + b
+    # print('mul done')
+
+    out = out.reshape(n_filters, h_out, w_out, n_x)
+    out = out.transpose(3, 0, 1, 2)
+
+    cache = (X, W, b, stride, padding, X_col)
+
+    return out, cache
+
+
+def conv_forward_trn(X, W, b, add_bit, mul_bit, stride=1, padding=1):
+    cache = W, b, stride, padding
+    n_filters, d_filter, h_filter, w_filter = W.shape
+    n_x, d_x, h_x, w_x = X.shape
+    h_out = (h_x - h_filter + 2 * padding) / stride + 1
+    w_out = (w_x - w_filter + 2 * padding) / stride + 1
+
+    if not h_out.is_integer() or not w_out.is_integer():
+        raise Exception('Invalid output dimension!')
+
+    h_out, w_out = int(h_out), int(w_out)
+
+    X_col = im2col_indices(X, h_filter, w_filter, padding=padding, stride=stride)
+    W_col = W.reshape(n_filters, -1)
+
     X_col, W_col = X_col.astype(np.float64), W_col.astype(np.float64)
     print('muling')
-    out = mul(W_col, X_col) + b
+    out, ma, min = mul(W_col, X_col, add_bit, mul_bit)
+    out = out + b
+    print("max = {} \t min = {}".format(ma, min))
+    out = np.floor(out * (2**add_bit)) / (2**add_bit)
     print('mul done')
+
     out = out.reshape(n_filters, h_out, w_out, n_x)
     out = out.transpose(3, 0, 1, 2)
 
